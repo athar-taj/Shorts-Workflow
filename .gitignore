@@ -1,0 +1,17 @@
+# Downloaded and processed videos (can be large)
+videos/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+
+# Secrets & Configs
+*.json
+client_secret*.json
+
+# Binaries & Media
+.bin/
+*.mp4
+*.webm
