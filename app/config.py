@@ -10,6 +10,7 @@ Example:
 """
 
 import os
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Root of the project — the directory that contains this config.py's parent (app/)
@@ -122,7 +123,47 @@ class Settings(BaseSettings):
     yt_client_secrets_file: str = os.path.join(PROJECT_ROOT, "client_secret_2_954009129756-054jj7m94iomodinjik42raj3su0gnfh.apps.googleusercontent.com.json")
     yt_credentials_cache: str = os.path.join(PROJECT_ROOT, "youtube_token.json")
 
+    # ── AI Shorts Generation (Transplanted) ──────────────────────────────────
+    DRY_RUN: bool = False
+    HF_TOKEN: str = "hf_dummy"
+    LLM_BACKEND: str = "transformers"
+    LLM_MODEL_PRIMARY: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    LLM_MODEL_FALLBACK: str = "sshleifer/tiny-gpt2"
+    LLM_MAX_NEW_TOKENS: int = 600
+    LLM_TEMPERATURE: float = 0.85
+    IMAGE_MODEL_PRIMARY: str = "runwayml/stable-diffusion-v1-5"
+    IMAGE_MODEL_FALLBACK: str = "CompVis/stable-diffusion-v1-4"
+    IMAGE_RESOLUTION: tuple[int, int] = (512, 512)
+    IMAGE_INFERENCE_STEPS: int = 4
+    IMAGE_GUIDANCE_SCALE: float = 7.5
+    IMAGE_FORMAT: str = "PNG"
+    TTS_MODEL: str = "tts_models/en/ljspeech/tacotron2-DDC"
+    TTS_SPEAKER_SPEED: float = 1.0
+    TTS_SAMPLE_RATE: int = 22050
+    MAX_SCENES: int = 5
+    MAX_STORY_WORDS: int = 120
+    MAX_SCENE_WORDS: int = 24
+    VIDEO_WIDTH: int = 1080
+    VIDEO_HEIGHT: int = 1920
+    VIDEO_FPS: int = 24
+    VIDEO_CODEC: str = "libx264"
+    AUDIO_CODEC: str = "aac"
+    SCENE_DURATION_S: float = 6.0
+    ZOOM_SPEED: float = 0.0005
+    CATEGORIES: list[str] = ["kids_fun_story", "horror_short", "motivational_story", "comedy_sketch"]
+    LOG_LEVEL: str = "INFO"
+    LOG_FILE: Path = Path(os.path.join(PROJECT_ROOT, "pipeline.log"))
+    OUTPUT_DIR: Path = Path(os.path.join(PROJECT_ROOT, "outputs"))
+    MEMORY_DIR: Path = Path(os.path.join(PROJECT_ROOT, "memory"))
+    AUDIO_DIR: Path = Path(os.path.join(PROJECT_ROOT, "outputs", "audio"))
+    IMAGE_DIR: Path = Path(os.path.join(PROJECT_ROOT, "outputs", "images"))
+    VIDEO_DIR: Path = Path(os.path.join(PROJECT_ROOT, "outputs", "videos"))
 
 
 # Singleton – import this everywhere
 settings = Settings()
+
+# Ensure directories exist
+for _d in [settings.OUTPUT_DIR, settings.MEMORY_DIR, settings.AUDIO_DIR, settings.IMAGE_DIR, settings.VIDEO_DIR]:
+    os.makedirs(_d, exist_ok=True)
+

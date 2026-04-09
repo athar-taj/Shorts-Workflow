@@ -16,6 +16,7 @@ from app.services.whisper import WhisperService
 from app.services.youtube_upload import YouTubeUploadService
 from app.services.workflow import WorkflowService
 from app.services.veo_service import VeoService, prompts_from_script
+from app.ai_shorts.workflow_service import WorkflowService as AIShortsWorkflow
 from app.config import settings
 
 console = Console()
@@ -307,6 +308,31 @@ def step_veo3_from_prompt():
 
 
 
+def step_generate_ai_short():
+    console.print(Panel("[bold cyan]🤖 AI Generative Shorts Pipeline[/]\n[dim]Fully autonomous local generation (Story -> Images -> Audio -> FFmpeg)[/]", border_style="cyan"))
+    
+    cat_choices = ["🔄  Auto (rotation)", "🧸  kids_fun_story", "👻  horror_short", "🔥  motivational_story", "😂  comedy_sketch"]
+    cat_answer = inquirer.prompt([inquirer.List('cat', message="Choose a category", choices=cat_choices)])['cat']
+    
+    from app.ai_shorts.schemas import Category
+    category_override = None
+    if "kids" in cat_answer: category_override = Category.KIDS_FUN_STORY
+    elif "horror" in cat_answer: category_override = Category.HORROR_SHORT
+    elif "motivational" in cat_answer: category_override = Category.MOTIVATIONAL_STORY
+    elif "comedy" in cat_answer: category_override = Category.COMEDY_SKETCH
+
+    upload_ans = inquirer.prompt([inquirer.Confirm('upload', message="Upload to YouTube after generation?", default=False)])['upload']
+
+    console.print("\n[bold yellow]Initializing AI Models...[/]")
+    try:
+        wf = AIShortsWorkflow()
+        result = wf.run(category_override=category_override, upload_to_youtube=upload_ans)
+        
+        console.print(Panel(f"[bold green]✔ Generation Complete![/]\n\n[bold cyan]Saved to:[/] {result.video_path}\n[bold cyan]Title:[/] {result.title}\n[bold cyan]YouTube URL:[/] {result.youtube_url or 'Not uploaded'}", title="🎬 AI Short Result", border_style="green"))
+    except Exception as e:
+        console.print(f"[bold red]❌ AI Short Generation failed:[/] {e}")
+
+
 def main_loop():
     while True:
         print_header()
@@ -323,6 +349,7 @@ def main_loop():
                     "4. Native FFmpeg Burn Captions",
                     "5. Generate AI Viral Metadata",
                     "6. 🎬 Generate Video from Prompt (Veo 3 + Audio)",
+                    "7. 🤖 Generate AI Short (Local Pipeline)",
                     "❌ Exit"
                 ],
             )
@@ -346,6 +373,8 @@ def main_loop():
             step_ai_metadata()
         elif choice.startswith("6"):
             step_veo3_from_prompt()
+        elif choice.startswith("7"):
+            step_generate_ai_short()
         elif choice.startswith("0."):
             setup_q = [
                 inquirer.Text("amount", message="How many shorts to process in this run?", default="1")
